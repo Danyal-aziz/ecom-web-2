@@ -1,0 +1,56 @@
+name: Deploy Laravel Project
+
+on:
+  push:
+    branches:
+      - master
+      
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          
+      - name: Install php dependencies
+        run: |
+          apt-get install -y php8.1-cli php8.1-common php8.1-mysql php8.1-zip php8.1-gd php8.1-mbstring php8.1-curl php8.1-xml php8.1-bcmath
+
+      - name: Install Composer dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Yarn dependencies
+        run: |
+          yarn install --frozen-lockfile
+          yarn production
+
+      - name: Set up Apache2 and MySQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apache2 mysql-server php-mysql
+
+      - name: Configure Apache2
+        run: |
+          sudo systemctl restart apache2
+
+
+      - name: Set up environment variables
+        run: |
+          php artisan key:generate
+    
+      - name: Set up 
+        run: |
+          php artisan migerate
